@@ -1,60 +1,126 @@
-import { useState, useEffect } from "react";
-import "./App.css";
+import React,{useState, useEffect} from 'react';
+import axios from 'axios'
+import './App.css'
 
-// Components
-import Card from "./components/Card";
-import Pagination from "./components/Pagination";
+function App() {
 
-const App = ({ match }) => {
-  const pageNumber = match.params.pageNumber || 1;
+ 
 
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  // logic and data
+  var [title,settitle] = useState('')
 
-  const [page, setPage] = useState(pageNumber);
-  const [pages, setPages] = useState(1);
+  var [content,setcontent] = useState('')
 
-  useEffect(() => {
-    const fecthPosts = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/v1/posts?page=${page}`);
+  var [author, setauthor]= useState('')
 
-        const { data, pages: totalPages } = await res.json();
+  var [arr,setarr] = useState([])
 
-        setPages(totalPages);
-        setPosts(data);
-        setLoading(false);
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
-        setError("Some error occured");
-      }
-    };
+  // for creating side effects of useState. has list of dependencies
 
-    fecthPosts();
-  }, [page]);
+  
+  function updateTitle(e){
+    settitle(e.target.value)
+  }
+
+  function updateauthor(e){
+    setauthor(e.target.value)
+  }
+
+  function updatecontent(e){
+    setcontent(e.target.value)
+  }
+
+  function submitform(e){
+
+    e.preventDefault()
+    
+    var data = {
+      title:title,
+      author:author,
+      body:content
+    }
+    axios({
+      url:'/data',
+      method:'POST',
+      data:data
+    }).then( function(){
+
+      console.log('Data sent')
+
+    } ).catch(function(){
+
+      console.log('error')
+    })
+
+    settitle('')
+    setauthor('')
+    setcontent('')
+  }
+ 
+  console.log('title:'+title)
+
+  function showdata(){
+    axios.get('/api'
+      
+    ).then(function(response){
+      var bdy =response.data
+      setarr(bdy)
+      console.log('data received')
+    }).catch(function(){
+      console.log('error')
+    })
+  }
+
+  useEffect(showdata,[])
 
   return (
-    <div className="app">
-      {loading ? (
-        <h3 className="loading-text">Loading...</h3>
-      ) : error ? (
-        <h3 className="error-text">{error}</h3>
-      ) : (
-        <>
-          <Pagination page={page} pages={pages} changePage={setPage} />
-          <div className="app__posts">
-            {posts.map((post) => (
-              <Card key={post._id} post={post} />
-            ))}
+    <div className="App">
+      App
+     
+      <form onSubmit={submitform}>
+        <div className='forminput'>
+        <input type='text' name='title' value={title} onChange={updateTitle} />
+        </div>
+
+        <div className='forminput'>
+        <input type='text' name='author' value={author} onChange={updateauthor} />
+        </div>
+        
+
+        <br/>
+
+        <div className='forminput'>
+        <textarea name='body' value={content} onChange={updatecontent} />
+        </div>
+
+      
+          <button> Submit </button>
+          <div>
+             {arr.map(function(e,i){
+               return(
+                 <>
+                 <h1> {e.title} </h1>
+                 <p> {e.author } </p>
+                 <p> {e.body} </p>
+                 </>
+               )
+             }) }
           </div>
-          <Pagination page={page} pages={pages} changePage={setPage} />
-        </>
-      )}
+        
+      </form>
+    
+    
+     
+
+
+     
+
     </div>
   );
-};
+}
+
+
+
 
 export default App;
+
